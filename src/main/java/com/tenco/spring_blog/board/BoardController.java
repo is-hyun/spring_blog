@@ -92,7 +92,7 @@ public class BoardController {
     // 게시글 삭제
     @PostMapping("/board/{id}/delete")
     public String delete(@PathVariable Long id) {
-        boardNativeRepository.deleteById(id);
+        boardPersistRepository.deleteById(id);
         // PRG 패턴
         return "redirect:/";
     }

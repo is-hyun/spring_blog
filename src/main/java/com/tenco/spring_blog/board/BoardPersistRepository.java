@@ -6,6 +6,7 @@ package com.tenco.spring_blog.board;
  */
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,35 @@ import java.util.List;
 public class BoardPersistRepository {
 
     private final EntityManager em;
+
+    // 게시글 삭제하기 (영속성 컨텍스트를 활용한 안전한 삭제)
+    @Transactional
+    public void deleteById(Long id) {
+        // 1. 삭제할 엔티티를 영속 상태로 조회
+        Board boardEntity = em.find(Board.class, id);
+
+        // 2. 엔티티 존재 여부 확인 (안전한 삭제)
+        if (boardEntity == null) {
+            throw new IllegalArgumentException("삭제할 게시글을 찾을 수 없습니다");
+        }
+
+        // 3. 영속 상태의 엔티티를 삭제 상태로 변경
+        em.remove(boardEntity);
+        // 삭제 과정
+        // board 엔티티가 영속 -> 삭제로 상태 변경
+        // 1차 캐시에서 해당 엔티티 제거
+        // 트랜잭션 커밋 시점에 DELETE SQL 자동 실행
+
+        // 삭제하는 JPQL 쿼리 만들어 보기
+        // DELETE FROM Board b WHERE b.id = :id
+        // Query query = em.createQuery("DELETE FROM Board b WHERE b.id = :id");
+        // query.setParameter("id", id);
+        // query.executeUpdate();
+
+        // return em.createQuery("DELETE FROM Board b WHERE b.id = :id")
+        //        .setParameter("id", id)
+        //        .executeUpdate();
+    }
 
     // 기본키로 게시글 단건 조회(1차 캐시 활용)
     public Board findById(Long id) {
