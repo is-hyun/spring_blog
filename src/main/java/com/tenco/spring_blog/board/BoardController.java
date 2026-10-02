@@ -25,14 +25,7 @@ public class BoardController {
     @GetMapping({"/", "/board/list"})
     public String list(Model model) {
 
-//        // 뼈대용 임시 데이터
-//        model.addAttribute("boardList", List.of(
-//                Map.of("id", 1, "title", "첫 번째 글"),
-//                Map.of("id", 2, "title", "두 번째 글"),
-//                Map.of("id", 3, "title", "세 번째 글")
-//        ));
-
-        List<Board> boardList = boardNativeRepository.findAll();
+        List<Board> boardList = boardPersistRepository.findAll();
         model.addAttribute("boardList", boardList);
 
         return "board/list";

@@ -8,11 +8,29 @@ package com.tenco.spring_blog.board;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
+@Repository
 @RequiredArgsConstructor
 public class BoardPersistRepository {
 
     private final EntityManager em;
+
+    // JPQL을 사용한 게시글 목록 조회
+    public List<Board> findAll() {
+        // JPQL : 엔티티 객체를 대상으로 하는 객체지향 쿼리
+        // Board는 엔티티 클래스명, b 별칭
+        // 테이블명(board_tb)가 아닌 엔티티명(Board) 사용
+        String jpql = """
+                SELECT b FROM Board b ORDER BY b.createdAt DESC
+                """;
+        // createQuery() - JQPL 쿼리 생성
+        // 두 번째 매개변수로 반환 타입을 지정 (타입 안정성 확보)
+        // getResultList() - List<Board>로 반환
+        return em.createQuery(jpql, Board.class).getResultList();
+    }
 
     // 게시글 저장
     @Transactional
