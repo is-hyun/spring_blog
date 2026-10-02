@@ -19,6 +19,24 @@ public class BoardPersistRepository {
 
     private final EntityManager em;
 
+    // 게시글 수정하기
+    @Transactional
+    public void updateById(Long id, BoardRequest.UpdateDto reqDto) {
+        // 1. 수정할 엔티티 조회 후 영속 상태 설정
+        Board boardEntity = em.find(Board.class, id);
+
+        // 2. 엔티티 존재 여부 확인
+        if (boardEntity == null) {
+            throw new IllegalArgumentException("수정할 게시글을 찾을 수 없습니다");
+        }
+
+        // 엔티티 객체 상태 변경중
+        boardEntity.setTitle(reqDto.getTitle());
+        boardEntity.setContent(reqDto.getContent());
+        // 1차 캐시에 저장된 엔티티 객체의 내부 상태값이 변경되고 트랜잭션이 종료가 되면
+        // 더티 체킹(Dirty Checking)이 발생한다
+    }
+
     // 게시글 삭제하기 (영속성 컨텍스트를 활용한 안전한 삭제)
     @Transactional
     public void deleteById(Long id) {

@@ -72,19 +72,18 @@ public class BoardController {
     // GET - http://localhost:8080/board/1/update
     @GetMapping("/board/{id}/update")
     public String updateForm(@PathVariable Long id, Model model) {
-        Board board = boardNativeRepository.findById(id);
+        // 수정하기 화면 요청 (먼저 조회 부터)
+        Board board = boardPersistRepository.findById(id);
         model.addAttribute("board", board);
-
         return "board/update-form";
     }
 
     // POST - http://localhost:8080/board/1/update
     @PostMapping("/board/{id}/update")
-    public String update(@PathVariable Long id,
-                         @RequestParam(name = "title") String title,
-                         @RequestParam(name = "content") String content) {
+    public String update(@PathVariable Long id, BoardRequest.UpdateDto reqDto) {
 
-        boardNativeRepository.updateById(title, content, id);
+        reqDto.validate(); // 유효성 실패 (throw 던져짐)
+        boardPersistRepository.updateById(id, reqDto);
         // PRG
         return "redirect:/board/" + id;
     }
