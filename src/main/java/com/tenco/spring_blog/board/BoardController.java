@@ -34,12 +34,14 @@ public class BoardController {
     // GET - http://localhost:8080/board/2
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model) {
-        Board board = boardNativeRepository.findById(id);
-        if (board == null) {
-            return "redirect:/";
+        Board boardEntity = boardPersistRepository.findById(id);
+        // Board boardEntity = boardPersistRepository.findByIdWithJPQL(id);
+        if (boardEntity == null) {
+            // 추후에 404 에러 페이지 구현 시 처리
+            throw new RuntimeException("게시글을 찾을 수 없습니다 : " + id);
         }
 
-        model.addAttribute("board", board);
+        model.addAttribute("board", boardEntity);
         return "board/detail";
     }
 

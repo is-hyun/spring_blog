@@ -18,6 +18,37 @@ public class BoardPersistRepository {
 
     private final EntityManager em;
 
+    // 기본키로 게시글 단건 조회(1차 캐시 활용)
+    public Board findById(Long id) {
+        Board board = em.find(Board.class, id);
+        // find()
+        // 1. 기본키로만 조회 가능
+        // 2. 1차 캐시에서 먼저 찾기 시도
+        // 3. 없으면 DB에서 조회 후 1차 캐시에 저장
+        // 4. 영속 상태로 만든 후 반환
+        return board;
+    }
+
+    // JPQL을 사용한 조회 방법
+    public Board findByIdWithJPQL(Long id) {
+        String jpql = """
+                SELECT b FROM Board b WHERE b.id = :id 
+                """;
+
+        try {
+            return em.createQuery(jpql, Board.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+
+        // JPQL 단점
+        // 1. 1차 캐시를 우회해 항상 DB에 접근
+        // 2. 코드가 복잡할 수 있음
+        // 3. getSingleResult() 에 대한 예외처리 필요
+    }
+
     // JPQL을 사용한 게시글 목록 조회
     public List<Board> findAll() {
         // JPQL : 엔티티 객체를 대상으로 하는 객체지향 쿼리
