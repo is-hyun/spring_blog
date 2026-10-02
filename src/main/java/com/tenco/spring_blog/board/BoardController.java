@@ -19,6 +19,7 @@ public class BoardController {
 
     // [코드 추가]
     private final BoardNativeRepository boardNativeRepository;
+    private final BoardPersistRepository boardPersistRepository;
 
     // GET - http://localhost:8080/    ,    http://localhost:8080/board/list
     @GetMapping({"/", "/board/list"})
@@ -56,26 +57,20 @@ public class BoardController {
         return "board/save-form";
     }
 
-    // [코드 추가]
-    // GET - http://localhost:8080/board/save
-    // 스프링 부트의 데이터 기본 파싱 전략 key=value
-    // name 속성 기준으로 값을 추출할 수 있다
     @PostMapping("/board/save")
-    public String save(@RequestParam("username") String username,
-                       @RequestParam("title") String title,
-                       @RequestParam("content") String content) {
-        // 폼의 name 속성과 매개변수명이 일치하면 자동으로 값이 바인딩 됨
-        // name="title" --> String title로 자동 매핑
+    // Spring이 폼 데이터를 객체로 변환하는 과정 (데이터 바인딩 메커니즘)
+    // 폼 데이터 바인딩 - Spring이 HTTP 요청 파라미터를 객체로 자동 변환
+    public String save(BoardRequest.SaveDto reqDto) {
 
-        log.info("username : {}", username);
-        log.info("title : {}", title);
-        log.info("content : {}", content);
-
-        // DAO 객체에 데이터를 전달 후 저장하는 일 위임
-        boardNativeRepository.save(title, content, username);
-
-        // redirect: - 저장 후 메인 페이지로 이동
-        // POST 요청 후 redirect로 = RPG(Post-Redirect-Get) 패턴
+        // 1. DTO에서 Entity 클래스로 변환
+        // Board board = new Board(reqDto.getTitle(), reqDto.getContent(), reqDto.getUsername());
+        Board board = Board.builder()
+                .title(reqDto.getTitle())
+                .content(reqDto.getContent())
+                .username(reqDto.getUsername())
+                .build();
+        Board boardEntity = boardPersistRepository.save(board);
+        
         return "redirect:/";
     }
 
