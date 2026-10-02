@@ -35,6 +35,7 @@ public class BoardPersistRepository {
         boardEntity.setContent(reqDto.getContent());
         // 1차 캐시에 저장된 엔티티 객체의 내부 상태값이 변경되고 트랜잭션이 종료가 되면
         // 더티 체킹(Dirty Checking)이 발생한다
+        boardEntity.update(reqDto);
     }
 
     // 게시글 삭제하기 (영속성 컨텍스트를 활용한 안전한 삭제)
