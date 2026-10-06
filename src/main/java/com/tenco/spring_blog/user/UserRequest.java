@@ -47,6 +47,8 @@ public class UserRequest {
         private String username;
         private String password;
 
+        private boolean rememberId;
+
         // 회원가입시 데이터 검증 메서드
         public void validate() {
             if(username == null || username.trim().isEmpty()) {
