@@ -1,5 +1,6 @@
 package com.tenco.spring_blog.board;
 
+import com.tenco.spring_blog.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -57,15 +58,16 @@ public class BoardController {
     // 폼 데이터 바인딩 - Spring이 HTTP 요청 파라미터를 객체로 자동 변환
     public String save(BoardRequest.SaveDto reqDto) {
 
+// TODO 수정 예정
         // 1. DTO에서 Entity 클래스로 변환
         // Board board = new Board(reqDto.getTitle(), reqDto.getContent(), reqDto.getUsername());
-        Board board = Board.builder()
-                .title(reqDto.getTitle())
-                .content(reqDto.getContent())
-                .username(reqDto.getUsername())
-                .build();
-        Board boardEntity = boardPersistRepository.save(board);
-        
+//        Board board = Board.builder()
+//                .title(reqDto.getTitle())
+//                .content(reqDto.getContent())
+//                .user(reqDto.getUsername())
+//                .build();
+//        Board boardEntity = boardPersistRepository.save(board);
+//
         return "redirect:/";
     }
 

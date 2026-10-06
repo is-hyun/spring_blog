@@ -1,4 +1,4 @@
-package com.tenco.spring_blog.user;
+package com.tenco.spring_blog.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

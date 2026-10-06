@@ -28,6 +28,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        defalut_batch_fetch_size: 10
         format_sql: true  # 출력되는 SQL을 콘솔창에서 줄바꿈으로 보기 좋게 표기
     # 테이블 data.sql을 실행
     defer-datasource-initialization: true
