@@ -1,8 +1,11 @@
 package com.tenco.spring_blog.user;
 
+import lombok.Data;
+
 public class UserRequest {
 
     // 회원가입용 DTO
+    @Data
     public static class JoinDto {
         private String username;
         private String password;
@@ -37,5 +40,21 @@ public class UserRequest {
                     .build();
         }
 
+    }
+
+    @Data
+    public static class LoginDto {
+        private String username;
+        private String password;
+
+        // 회원가입시 데이터 검증 메서드
+        public void validate() {
+            if(username == null || username.trim().isEmpty()) {
+                throw new IllegalArgumentException("사용자명은 필수 입니다. ");
+            }
+            if(password == null || password.trim().isEmpty()) {
+                throw new IllegalArgumentException("사용자명은 필수 입니다. ");
+            }
+        }
     }
 }

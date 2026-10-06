@@ -1,6 +1,7 @@
 package com.tenco.spring_blog.user;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,9 @@ public class UserPersistRepository {
 
     @Autowired
     private final EntityManager em;
+
+    // 회원 정보 조회 - 로그인 (사용자 이름, 비밀번호 확인)
+
 
     // 회원 가입
     @Transactional
@@ -35,6 +39,22 @@ public class UserPersistRepository {
                     .setParameter("username", username)
                     .getSingleResult();
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // 회원 정보 조회 - 로그인 (사용자 이름, 비밀번호 확인)
+    public User findByUsernameAndPassword(String username, String password) {
+        try {
+            // JPQL
+            String jpql = "SELECT u FROM User u WHERE u.username = :username AND u.password = :password ";
+            Query query = em.createQuery(jpql, User.class);
+            query.setParameter("username", username);
+            query.setParameter("password", password);
+            return (User) query.getSingleResult();
+        } catch (Exception e) {
+            // 일치하는 사용자가 없거나 에러 발생 시 null 반환
+            // 로그인 실패를 의미함
             return null;
         }
     }
