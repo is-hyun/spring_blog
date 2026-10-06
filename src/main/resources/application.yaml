@@ -1,5 +1,13 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+  mustache:
+    servlet:
+      expose-session-attributes: true
   profiles:
     active: local
+
+server:
+  sevlet:
+    session:
+      tracking-modes: cookie

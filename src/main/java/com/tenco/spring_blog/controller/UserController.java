@@ -124,11 +124,11 @@ public class UserController {
                 Map.of("username", "김민수", "email", "abc@naver.com"));
         return "user/update-form";
     }
-
-    // GET - http://localhost:8080/logout
-    @GetMapping("/logout")
-    public String logout() {
-        // templates/   <<-- 콘텐츠 루트 경로
-        return "redirect/";
-    }
+//
+//    // GET - http://localhost:8080/logout
+//    @GetMapping("/logout")
+//    public String logout() {
+//        // templates/   <<-- 콘텐츠 루트 경로
+//        return "redirect/";
+//    }
 }
