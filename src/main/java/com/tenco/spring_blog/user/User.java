@@ -1,10 +1,7 @@
 package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -22,6 +19,7 @@ public class User {
 
     @Column(unique = true)
     private String username;
+    @Setter
     private String password;
     // 같은 사람이 두 번 가입할 수 없도록 유니크 제약
     @Column(unique = true)

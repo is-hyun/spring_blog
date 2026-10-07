@@ -2,9 +2,12 @@ package com.tenco.spring_blog._core.error;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 // 모든 컨트롤러에서 발생하는 예외를 이 클래스에서 처리
 @Slf4j
@@ -34,15 +37,32 @@ public class GlobalExceptionHandeler {
         return "err/401";
     }
 
+//    @ExceptionHandler(Exception403.class)
+//    public String ex403(Exception403 e, HttpServletRequest request, Model model) {
+//        log.warn("==== 403 Forbidden 에러 발생 ====");
+//        log.warn("요청 URL : {}", request.getRequestURL());
+//        log.warn("권한 오류 : {}", e.getMessage());
+//        log.warn("예외 클래스 : {}", e.getClass().getSimpleName());
+//
+//        model.addAttribute("msg", e.getMessage());
+//        return "err/403";
+//    }
+
     @ExceptionHandler(Exception403.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.FORBIDDEN) // 상태코드 403지정 (없으면 200으로 나감)
     public String ex403(Exception403 e, HttpServletRequest request, Model model) {
         log.warn("==== 403 Forbidden 에러 발생 ====");
         log.warn("요청 URL : {}", request.getRequestURL());
         log.warn("권한 오류 : {}", e.getMessage());
         log.warn("예외 클래스 : {}", e.getClass().getSimpleName());
-
-        model.addAttribute("msg", e.getMessage());
-        return "err/403";
+        String msg = e.getMessage().replace("'", "\\'"); // 따옴표 깨짐 방지
+        return """
+                <script>
+                    alert('%s');
+                    history.back();
+                </script>
+                """.formatted(msg);
     }
 
     @ExceptionHandler(Exception404.class)
