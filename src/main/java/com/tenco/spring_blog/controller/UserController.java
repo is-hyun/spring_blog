@@ -1,9 +1,10 @@
 package com.tenco.spring_blog.controller;
 
-import com.tenco.spring_blog.board.BoardPersistRepository;
 import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog.user.UserPersistRepository;
 import com.tenco.spring_blog.user.UserRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +36,11 @@ public class UserController {
     // POST http://localhost:8080/login
     // 로그인 처리 (예외적으로 POTS 요청)
     @PostMapping("/login")
-    public String login(UserRequest.LoginDto loginDto, HttpSession session, Model model) {
+    public String login(UserRequest.LoginDto loginDto, HttpSession session, Model model, HttpServletResponse response) {
         log.info("=== 로그인 요청 ===");
         log.info("사용자 명 : {}", loginDto.getUsername());
+        log.info("아이디 저장 체크 여부 : {}", loginDto.isRememberId());
+
 
         try {
             // 1. 입력 데이터 검증
@@ -51,6 +54,33 @@ public class UserController {
             if (sessionUser == null) {
                 // 로그인 실패 : 일치하는 사용자 없음
                 throw new IllegalArgumentException("사용자명 또는 비밀번호가 올바르지 않습니다");
+            }
+
+            if (loginDto.isRememberId()) {
+                // [체크박스 True] -> 쿠키 생성 및 저장
+                // 요구 사항 1: 쿠키 이름은 'rememberUsername', 값은 로그인한 사용자명
+                Cookie cookie = new Cookie("rememberUsername", sessionUser.getUsername());
+
+                // 요구 사항 3: 쿠키 유효 시간은 7일 (7일 * 24시간 * 60분 * 60초)
+                cookie.setMaxAge(7 * 24 * 60 * 60);
+
+                // 요구 사항 4: 자바스크립트에서 읽을 수 없도록 보안 설정 (HttpOnly)
+                cookie.setHttpOnly(true);
+
+                // 애플리케이션 전체 경로에서 쿠키가 유효하도록 설정
+                cookie.setPath("/");
+
+                // 브라우저 응답 헤더에 쿠키 추가
+                response.addCookie(cookie);
+                log.info("아이디 저장 쿠키 생성 완료 (7일 유지)");
+            } else {
+                // [체크박스 False] -> 쿠키 삭제 (요구 사항 5 만족)
+                // 기존에 저장된 쿠키가 있다면 해제 시 지워주어야 합니다.
+                Cookie cookie = new Cookie("rememberUsername", null);
+                cookie.setMaxAge(0); // 유효시간을 0으로 설정하여 즉시 만료 및 삭제 처리
+                cookie.setPath("/");
+                response.addCookie(cookie);
+                log.info("아이디 저장 쿠키 삭제 처리 완료");
             }
 
             // 4. 로그인 성공 : 세션에 사용자 정보를 저장
@@ -111,7 +141,27 @@ public class UserController {
 
     // GET - http://localhost:8080/login
     @GetMapping("/login")
-    public String login() {
+    public String login(jakarta.servlet.http.HttpServletRequest request, Model model) {
+        log.info("=== 로그인 화면 요청 ===");
+
+        // 화면에 전달할 기본 아이디 값 (쿠키가 없으면 빈 문자열 유지)
+        String savedUsername = "";
+
+        // 1. 브라우저가 요청 헤더에 담아 보낸 쿠키들을 전부 가져옵니다.
+        Cookie[] cookies = request.getCookies();
+
+        // 2. 쿠키가 존재할 때만 내부 검색을 수행합니다 (요구 사항 6: 첫 방문 시 null 방어)
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                // 3. 미션 3에서 저장했던 쿠키 이름인 'rememberUsername'이 있는지 확인합니다.
+                if ("rememberUsername".equals(cookie.getName())) {
+                    savedUsername = cookie.getValue(); // 쿠키에 저장된 사용자명 꺼내기
+                    log.info("쿠키에서 복원된 사용자명 : {}", savedUsername);
+                    break; // 찾았으므로 반복문 종료
+                }
+            }
+        }
+        model.addAttribute("rememberUsername", savedUsername);
         return "user/login-form";
     }
 
