@@ -4,6 +4,23 @@ import lombok.Data;
 
 public class UserRequest {
 
+    // 회원정보 수정용 DTO
+    @Data
+    public static class UpdateDto {
+        private String password;
+
+        public void validate() {
+            if(password == null || password.trim().isEmpty()) {
+                throw new IllegalArgumentException("비밀번호는 필수입니다");
+            }
+            // 필요시 길이 수 제한, 특수문자 포함 여부 활용 가능
+            if (password.length() < 4) {
+                throw new IllegalArgumentException("비밀번호는 최소 4자 이상이어야 합니다");
+
+            }
+        }
+    }
+
     // 회원가입용 DTO
     @Data
     public static class JoinDto {
@@ -14,13 +31,13 @@ public class UserRequest {
         // 회원가입시 데이터 검증 메서드
         public void validate() {
             if(username == null || username.trim().isEmpty()) {
-                throw new IllegalArgumentException("사용자명은 필수 입니다. ");
+                throw new IllegalArgumentException("사용자명은 필수입니다. ");
             }
             if(password == null || password.trim().isEmpty()) {
-                throw new IllegalArgumentException("사용자명은 필수 입니다. ");
+                throw new IllegalArgumentException("사용자명은 필수입니다. ");
             }
             if(email == null || email.trim().isEmpty()) {
-                throw new IllegalArgumentException("사용자명은 필수 입니다. ");
+                throw new IllegalArgumentException("사용자명은 필수입니다. ");
             }
             // 간단하게 이메일 형식 검증
             if(!email.contains("@")) {

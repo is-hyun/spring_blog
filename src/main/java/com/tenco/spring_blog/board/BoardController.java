@@ -105,7 +105,7 @@ public class BoardController {
             return "board/update-form";
         } catch (Exception e) {
             // 권한이 없은 또는 다른 오류
-            log.error("삭제 실패 : {}", e.getMessage());
+            log.error("수정 실패 : {}", e.getMessage());
             //throw new RuntimeException(e);
             // 권한 없음 또는 기타 오류
             rttr.addFlashAttribute("errorMessage", e.getMessage());

@@ -36,4 +36,9 @@ public class User {
         this.password = password;
         this.email = email;
     }
+
+    // 회원 정보 수정용 메서드 (변경 감지용)
+    public void update(String password) {
+        this.password = password;
+    }
 }

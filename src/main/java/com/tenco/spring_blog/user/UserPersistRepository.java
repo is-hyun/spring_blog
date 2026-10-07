@@ -14,8 +14,15 @@ public class UserPersistRepository {
     @Autowired
     private final EntityManager em;
 
-    // 회원 정보 조회 - 로그인 (사용자 이름, 비밀번호 확인)
-
+    @Transactional
+    public User updateById(Long id, UserRequest.UpdateDto updateDto) {
+        User userEntity = em.find(User.class, id);
+        if (userEntity == null) {
+            throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다");
+        }
+        userEntity.update(updateDto.getPassword());
+        return userEntity;
+    }
 
     // 회원 가입
     @Transactional
@@ -57,5 +64,13 @@ public class UserPersistRepository {
             // 로그인 실패를 의미함
             return null;
         }
+    }
+
+    public User findById(Long id) {
+        User user = em.find(User.class, id);
+        if (user == null) {
+            throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다");
+        }
+        return user;
     }
 }
