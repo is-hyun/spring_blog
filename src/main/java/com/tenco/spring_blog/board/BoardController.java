@@ -9,7 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
@@ -107,7 +107,7 @@ public class BoardController {
 
     // 게시글 삭제
     @PostMapping("/board/{id}/delete")
-    public String delete(@PathVariable Long id, HttpSession session) {
+    public String delete(@PathVariable Long id, HttpSession session, RedirectAttributes rttr) {
 
         // 1. 인증 검사
         User sessionUser = (User) session.getAttribute("sessionUser");
@@ -129,7 +129,11 @@ public class BoardController {
 
         } catch (Exception e) {
             // throw new RuntimeException(e);
+            log.error("삭제 실패 : {}", e.getMessage());
             // 권한 없음 또는 기타 오류
+            // model.addAttribute("errorMessage", e.getMessage());
+            // return "redirect:/board/" + id;
+            rttr.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/board/" + id;
         }
     }
