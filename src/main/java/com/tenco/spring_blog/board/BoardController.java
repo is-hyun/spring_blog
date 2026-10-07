@@ -1,5 +1,6 @@
 package com.tenco.spring_blog.board;
 
+import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog.user.User;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class BoardController {
         // Board boardEntity = boardPersistRepository.findByIdWithJPQL(id);
         if (boardEntity == null) {
             // 추후에 404 에러 페이지 구현 시 처리
-            throw new RuntimeException("게시글을 찾을 수 없습니다 : " + id);
+            throw new Exception404("게시글을 찾을 수 없습니다 : " + id);
         }
 
         model.addAttribute("board", boardEntity);
@@ -157,7 +158,7 @@ public class BoardController {
             Board boardEntity = boardPersistRepository.findById(id);
             // 3. 권한 체크
             if (!boardEntity.isOwner(sessionUser.getId())) {
-                throw new RuntimeException("삭제 권한이 없습니다.");
+                throw new Exception403("삭제 권한이 없습니다.");
             }
             // 4. 권한 확인 후 삭제 실행
             boardPersistRepository.deleteById(id);
@@ -165,13 +166,13 @@ public class BoardController {
             return "redirect:/";
 
         } catch (Exception e) {
-            // throw new RuntimeException(e);
-            log.error("삭제 실패 : {}", e.getMessage());
-            // 권한 없음 또는 기타 오류
-            // model.addAttribute("errorMessage", e.getMessage());
-            // return "redirect:/board/" + id;
-            rttr.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/board/" + id;
+             throw new Exception403(e.getMessage());
+//            log.error("삭제 실패 : {}", e.getMessage());
+//            // 권한 없음 또는 기타 오류
+//            // model.addAttribute("errorMessage", e.getMessage());
+//            // return "redirect:/board/" + id;
+//            rttr.addFlashAttribute("errorMessage", e.getMessage());
+//            return "redirect:/board/" + id;
         }
     }
 
