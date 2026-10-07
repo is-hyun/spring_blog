@@ -1,6 +1,7 @@
 package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import java.sql.Timestamp;
 
 @Getter
 @NoArgsConstructor // 필수 (JPA 엔티티 생성 시 필수)
+@AllArgsConstructor
 @Table (name="user_tb")
 @Entity
 public class User {

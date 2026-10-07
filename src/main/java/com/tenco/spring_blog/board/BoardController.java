@@ -1,6 +1,7 @@
 package com.tenco.spring_blog.board;
 
 import com.tenco.spring_blog.user.User;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -48,27 +49,41 @@ public class BoardController {
 
     // GET - http://localhost:8080/board/save
     @GetMapping("/board/save")
-    public String saveForm() {
-
+    // 1. 인증 검사 - 로그인 안 된 사용자는 접근 못하게 처리
+    public String saveForm(HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
         return "board/save-form";
     }
 
     @PostMapping("/board/save")
     // Spring이 폼 데이터를 객체로 변환하는 과정 (데이터 바인딩 메커니즘)
     // 폼 데이터 바인딩 - Spring이 HTTP 요청 파라미터를 객체로 자동 변환
-    public String save(BoardRequest.SaveDto reqDto) {
+    public String save(BoardRequest.SaveDto saveDto, HttpSession session) {
 
-// TODO 수정 예정
-        // 1. DTO에서 Entity 클래스로 변환
-        // Board board = new Board(reqDto.getTitle(), reqDto.getContent(), reqDto.getUsername());
-//        Board board = Board.builder()
-//                .title(reqDto.getTitle())
-//                .content(reqDto.getContent())
-//                .user(reqDto.getUsername())
-//                .build();
-//        Board boardEntity = boardPersistRepository.save(board);
-//
-        return "redirect:/";
+        // 1. 인증 검사
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+        // 2. 유효성 검사
+        try {
+            // 입력 데이터 검증
+            saveDto.validate();
+            // DTO에서 Board 객체 생성
+            Board board = saveDto.toEntity(sessionUser);
+            // Board 저장
+            Board savedBoard = boardPersistRepository.save(board);
+
+            return "redirect:/";
+
+        } catch (Exception e) {
+            // 검증 실패 시 메시지와 함께 작성 폼으로 돌아가기
+            log.error(e.getMessage());
+            return "board/save-form";
+        }
     }
 
     // GET - http://localhost:8080/board/1/update
@@ -92,10 +107,31 @@ public class BoardController {
 
     // 게시글 삭제
     @PostMapping("/board/{id}/delete")
-    public String delete(@PathVariable Long id) {
-        boardPersistRepository.deleteById(id);
-        // PRG 패턴
-        return "redirect:/";
+    public String delete(@PathVariable Long id, HttpSession session) {
+
+        // 1. 인증 검사
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            // 2. 삭제할 게시글 조회
+            Board boardEntity = boardPersistRepository.findById(id);
+            // 3. 권한 체크
+            if (!boardEntity.isOwner(sessionUser.getId())) {
+                throw new RuntimeException("삭제 권한이 없습니다.");
+            }
+            // 4. 권한 확인 후 삭제 실행
+            boardPersistRepository.deleteById(id);
+            // 5. 삭제 성공 후 메인 페이지 돌아가기
+            return "redirect:/";
+
+        } catch (Exception e) {
+            // throw new RuntimeException(e);
+            // 권한 없음 또는 기타 오류
+            return "redirect:/board/" + id;
+        }
     }
 
     // TODO
