@@ -2,28 +2,25 @@ package com.tenco.spring_blog.board;
 
 import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog._core.error.Exception404;
+import com.tenco.spring_blog._core.util.Define;
 import com.tenco.spring_blog.user.User;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @Slf4j
-@RequiredArgsConstructor // [코드 추가]
+@RequiredArgsConstructor // DI 처리
 @Controller
 public class BoardController {
 
-    // [코드 추가]
-    private final BoardNativeRepository boardNativeRepository;
     private final BoardPersistRepository boardPersistRepository;
 
-    // GET - http://localhost:8080/    ,    http://localhost:8080/board/list
     @GetMapping({"/", "/board/list"})
     public String list(Model model) {
         List<Board> boardList = boardPersistRepository.findAll();
@@ -31,39 +28,34 @@ public class BoardController {
         return "board/list";
     }
 
-    // GET - http://localhost:8080/board/2
+    // GET http://localhost:8080/board/3
+    // excludePathPatterns로 제외되어 로그인 접근 가능
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model) {
         Board boardEntity = boardPersistRepository.findById(id);
-        // Board boardEntity = boardPersistRepository.findByIdWithJPQL(id);
         if (boardEntity == null) {
-            // 추후에 404 에러 페이지 구현 시 처리
-            throw new Exception404("게시글을 찾을 수 없습니다 : " + id);
+            throw new Exception404("게시글을 찾을 수 없습니다");
         }
         model.addAttribute("board", boardEntity);
         return "board/detail";
     }
 
-    // GET - http://localhost:8080/board/save
+
+    // GET http://localhost:8080/board/save (화면 요청)
     @GetMapping("/board/save")
-    // 1. 인증 검사 - 로그인 안 된 사용자는 접근 못하게 처리
     public String saveForm(HttpSession session) {
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+        // 인터셉터에서 인증 검사 진행 됨.
         return "board/save-form";
     }
 
+
     @PostMapping("/board/save")
-    // Spring이 폼 데이터를 객체로 변환하는 과정 (데이터 바인딩 메커니즘)
-    // 폼 데이터 바인딩 - Spring이 HTTP 요청 파라미터를 객체로 자동 변환
+    // Spring 폼 데이터를 객체로 변환하는 과정 (데이터 바인딩 메커니즘)
+    // 폼 데이터 바인딩 : Spring이 HTTP  요청 파라미터를 객체로 자동 변환
     public String save(BoardRequest.SaveDto saveDto, HttpSession session) {
-        // 1. 인증 검사
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+        // 1. 인증검사
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+
         // 2. 유효성 검사
         // 입력 데이터 검증
         saveDto.validate();
@@ -75,14 +67,12 @@ public class BoardController {
         return "redirect:/";
     }
 
-    // GET - http://localhost:8080/board/1/update
+    // GET http://localhost:8080/board/1/update (화면 요청)
     @GetMapping("/board/{id}/update")
     public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
         // 1. 인증 검사
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+
         // 2. 권한 체크를 위한 게시글 조회
         Board board = boardPersistRepository.findById(id);
         // 3. 권한 체크 : 본인이 작성한 게시글만 수정 가능
@@ -93,23 +83,25 @@ public class BoardController {
         return "board/update-form";
     }
 
-    // POST - http://localhost:8080/board/1/update
+    // POST http://localhost:8080/board/1/update (게시글 수정 기능 요청)
     @PostMapping("/board/{id}/update")
-    public String update(@PathVariable Long id, BoardRequest.UpdateDto updateDto, HttpSession session) {
+    public String update(@PathVariable Long id,
+                         BoardRequest.UpdateDto updateDto, HttpSession session) {
+        // 1. 인증 검사
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
 
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null ) {
-            return "redirect:/login";
-        }
-
+        // 2. 권한 검사
         Board boardEntity = boardPersistRepository.findById(id);
 
         if (!boardEntity.isOwner(sessionUser.getId())) {
             throw new Exception403("수정 권한이 없습니다");
         }
+        // 3. 입력 데이터 검증
         updateDto.validate();
-        // 더티 체킹을 통한 수정 실행
+        // 4. 더티 체킹을 통한 수정 실행
         boardPersistRepository.updateById(id, updateDto);
+        // PRG
+        // 5. 수정 완료 후 해당 게시글 상세보기로 리다이텍트 처리
         return "redirect:/board/" + id;
     }
 
@@ -119,10 +111,8 @@ public class BoardController {
         // 1. 인증 검사 (로그인 여부 확인)
         // 2. 권한 확인 -- 로그인 했지만 내가 작성한 글 인지 여부 확인
         // 2.1 - 관리자 광고성 게시글 .. 삭제도 가능 (권한)
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+
         // 2. 삭제할 게시글 조회 (권한 체크를 위해)
         Board boardEntity = boardPersistRepository.findById(id);
         // 3. 권한 체크 : 본인이 작성한 게시글만 삭제
