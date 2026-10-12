@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration // 스프링 설정 클래스임을 표시 (bin으로도 등록)
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private LoginInterceptor loginInterceptor;
+    private final LoginInterceptor loginInterceptor;
 
     // 내가 정의한 인터셉터를 설정 클래스에 등록
     @Override
