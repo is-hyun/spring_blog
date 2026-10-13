@@ -2,6 +2,7 @@ package com.tenco.spring_blog._core.interceptor;
 
 import com.tenco.spring_blog._core.error.Exception401;
 import com.tenco.spring_blog._core.util.Define;
+import com.tenco.spring_blog.user.SessionUserDto;
 import com.tenco.spring_blog.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,15 +20,13 @@ public class LoginInterceptor implements HandlerInterceptor {
     // return true - 컨트롤러 내부로 들여보냄 / false - 컨트롤러 내부로 못 들어감
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-
-        // getSession(false) - 세션이 없어도 새로 만들지 않고 null 반환
-        // request.getSession() - 로그인하지 않은 사용자에게도 빈 세션이 생성
+        // getSession(false) : 세션이 없으면 새로 만들기 않고 null 반환
+        // request.getSession() : 로그인하지 않은 사용자에게도 빈 세션이 생성된다.
         HttpSession session = request.getSession(false);
-        User sessionUser = (session == null) ? null : (User) session.getAttribute(Define.SESSION_USER);
-        if (sessionUser == null) {
-            throw new Exception401("로그인이 필요합니다");
+        SessionUserDto sessionUserDto = (session == null) ? null : (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        if (sessionUserDto == null) {
+            throw  new Exception401("로그인 먼저 해주세요");
         }
-
         return true;
     }
 

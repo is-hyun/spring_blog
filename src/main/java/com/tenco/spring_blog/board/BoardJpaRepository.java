@@ -35,8 +35,8 @@ public interface BoardJpaRepository extends JpaRepository<Board, Long> {
     // JOIN FETCH를 사용하여 N + 1 문제 해결
     @Query("SELECT b FROM Board b JOIN FETCH b.user u WHERE b.id = :id")
     Optional<Board> findByIdJoinUser(@Param("id") Long id);
-    // N + 1 문제 - 지연 로딩(Lazy Loading) 에서 Board 조회 후 User를 따로 조회하면 쿼리가 여러 번 실행
-    // JOIN FETCH 는 이를 한 번의 쿼리로 해결
+    // N + 1 문제 : 지연 로딩(Lazy Loading) 에서 Board 조회 후 User 를 따로 조회하면 쿼리가 여러번 실행 됨.
+    // JOIN FETCH는 이를 한번의 쿼리를 해결 함.
 
     @Query("SELECT b FROM Board b JOIN FETCH b.user u ORDER BY b.id DESC")
     List<Board> findAllJoinUser();
