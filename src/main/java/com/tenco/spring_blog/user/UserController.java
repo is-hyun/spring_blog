@@ -37,7 +37,7 @@ public class UserController {
     }
 
     // POST http://localhost:8080/login
-    // 로그인 처리 (예외적으로 POTS 요청)
+    // 로그인 처리 (예외적으로 POST 요청)
     @PostMapping("/login")
     public String login(UserRequest.LoginDto loginDto, HttpSession session, Model model) {
         loginDto.validate();

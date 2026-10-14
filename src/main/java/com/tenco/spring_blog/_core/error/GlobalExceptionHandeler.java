@@ -31,16 +31,22 @@ public class GlobalExceptionHandeler {
         return "err/400";
     }
 
-    @ExceptionHandler(Exception401.class)
+    @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public String ex401(Exception401 e, HttpServletRequest request, RedirectAttributes rttr) {
+    @ResponseBody
+    public String exUnauthorized(UnauthorizedException e, HttpServletRequest request, RedirectAttributes rttr) {
         log.warn("==== 401 Unauthorized 에러 발생 ====");
         log.warn("요청 URL : {}", request.getRequestURL());
         log.warn("인증 오류 : {}", e.getMessage());
         log.warn("예외 클래스 : {}", e.getClass().getSimpleName());
 
-        rttr.addFlashAttribute("errorMessage", e.getMessage());
-        return "redirect:/login";
+        String msg = e.getMessage().replace("'", "\\'"); // 따옴표 깨짐 방지
+        return """
+                <script>
+                    alert('%s');
+                    location.href = '/login'
+                </script>
+                """.formatted(msg);
     }
 
 //    @ExceptionHandler(Exception403.class)
