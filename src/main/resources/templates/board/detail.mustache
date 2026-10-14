@@ -46,7 +46,7 @@
                     <div>{{comment}}</div>
                 </div>
                 {{#isOwner}}
-                <form action="/reply/2/delete" method="post">
+                <form action="/reply/{{id}}/delete" method="post">
                     <button class="btn"><i class="fa-solid fa-trash"></i></button>
                 </form>
                 {{/isOwner}}

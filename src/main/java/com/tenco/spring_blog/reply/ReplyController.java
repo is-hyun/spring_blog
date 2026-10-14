@@ -5,6 +5,7 @@ import com.tenco.spring_blog.user.SessionUserDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @RequiredArgsConstructor
@@ -20,6 +21,14 @@ public class ReplyController {
         replyService.save(saveDto, sessionUserDto);
 
         return "redirect:/board/" + saveDto.getBoardId();
+    }
+
+    // 댓글 삭제
+    @PostMapping("/reply/{id}/delete")
+    public String delete(@PathVariable Long id, HttpSession session) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        replyService.deleteById(id, sessionUserDto);
+        return "redirect:/";
     }
 
 }
