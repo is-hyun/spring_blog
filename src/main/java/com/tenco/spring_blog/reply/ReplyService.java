@@ -63,11 +63,11 @@ public class ReplyService {
         replyJpaRepository.delete(reply);
     }
 
-    // D. 게시글 댓글 전체 삭제
-    @Transactional
-    public void deleteAllReplyById(Long boardId, SessionUserDto sessionUserDto) {
-        // 권한 확인 필요할까
-        replyJpaRepository.deleteByBoardId(boardId);
-    }
+//    // D. 게시글 댓글 전체 삭제
+//    @Transactional
+//    public void deleteAllReplyById(Long boardId, SessionUserDto sessionUserDto) {
+//        // 권한 확인 필요할까
+//        replyJpaRepository.deleteByBoardId(boardId);
+//    }
 
 }
