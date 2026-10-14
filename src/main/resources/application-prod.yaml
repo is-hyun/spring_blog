@@ -16,6 +16,7 @@ spring:
 
   # JPA 설정
   jpa:
+    open-in-view: true
     hibernate:
       # 운영 환경에서는 create 대신 update 사용. 없는 테이블과 컬럼만 추가
       ddl-auto: update

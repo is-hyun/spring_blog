@@ -3,7 +3,7 @@ spring:
     import: optional:file:.env[.properties]
   mustache:
     servlet:
-      expose-session-attributes: true
+      expose-session-attributes: false
   profiles:
     active: local
 
