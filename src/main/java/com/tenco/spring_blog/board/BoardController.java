@@ -47,7 +47,7 @@ public class BoardController {
         boolean isOwner = sessionUserDto != null && detailDto.getUserId().equals(sessionUserDto.getId());
 
         // 댓글 목록 조회
-        List<ReplyResponse.ListDto> replyList = replyService.findAllByBoardId(id, sessionUserDto.getId());
+        List<ReplyResponse.ListDto> replyList = replyService.findAllByBoardId(id, sessionUserId);
 
         model.addAttribute("board", detailDto);
         model.addAttribute("isOwner", isOwner);
