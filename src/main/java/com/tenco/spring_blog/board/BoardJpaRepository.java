@@ -1,5 +1,7 @@
 package com.tenco.spring_blog.board;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,6 +40,13 @@ public interface BoardJpaRepository extends JpaRepository<Board, Long> {
     // N + 1 문제 : 지연 로딩(Lazy Loading) 에서 Board 조회 후 User 를 따로 조회하면 쿼리가 여러번 실행 됨.
     // JOIN FETCH는 이를 한번의 쿼리를 해결 함.
 
-    @Query("SELECT b FROM Board b JOIN FETCH b.user u ORDER BY b.id DESC")
-    List<Board> findAllJoinUser();
+//    // 페이징 처리 전
+//     @Query("SELECT b FROM Board b JOIN FETCH b.user u ORDER BY b.id DESC")
+//     List<Board> findAllJoinUser();
+
+     // 페이징 처리
+    @Query(value = "SELECT b FROM Board b JOIN FETCH b.user u ORDER BY b.id DESC",
+            countQuery = "SELECT COUNT(b) FROM Board b")
+    Page<Board> findAllJoinUser(Pageable pageable);
+
 }
