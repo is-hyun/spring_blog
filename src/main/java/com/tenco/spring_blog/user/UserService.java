@@ -37,28 +37,28 @@ public class UserService {
      * @param joinDto 회원가입 정보
      * @return 저장된 사용자 정보
      */
-    @Transactional // 쓰기 작업이므로 트랜잭선 활성화
+    @Transactional
     public UserResponse.JoinDto join(UserRequest.JoinDto joinDto) {
         log.info("회원가입 서비스 처리 시작 - 사용자명: {}", joinDto.getUsername());
-        // 1. 중복 체크 : 이미 있으면 null 이 아님 (ifPresent 차이점 확인)
+        // 1. 사용자명, 이메일 중복 체크 (기존 그대로)
         userJpaRepository.findByUsername(joinDto.getUsername())
                 .ifPresent(user -> {
-                    log.warn("회원가입 실패 - 중복된 사용자명 : {}", joinDto.getUsername());
                     throw new Exception400("이미 존재하는 사용자명입니다");
                 });
-
-        // 2. 이메일 중복 검사
         userJpaRepository.findByEmail(joinDto.getEmail())
                 .ifPresent(user -> {
-                    log.warn("회원가입 실패 - 중복된 이메일 : {}", joinDto.getEmail());
                     throw new Exception400("이미 사용 중인 이메일입니다");
                 });
 
-        // 3. 프로필 이미지 저장 ( 새로게 생긴 파일 이름이 리턴 됨)
+        // 2. 프로필 이미지 저장 (기존 그대로, 없으면 null)
         String profileImage = FileUtil.saveImage(joinDto.getProfileImage());
 
-        // 2. 저장
-        User savedUser = userJpaRepository.save(joinDto.toEntity(profileImage));
+        // 3. 엔티티 생성 후 기본 역할 USER 부여
+        User user = joinDto.toEntity(profileImage);
+        user.addRole(Role.USER);
+
+        // 4. 저장 (cascade 로 UserRole 도 함께 INSERT)
+        User savedUser = userJpaRepository.save(user);
         log.info("회원가입 서비스 처리 완료 - 사용자명: {}, ID: {} ", joinDto.getUsername(), savedUser.getId());
         return new UserResponse.JoinDto(savedUser);
     }
