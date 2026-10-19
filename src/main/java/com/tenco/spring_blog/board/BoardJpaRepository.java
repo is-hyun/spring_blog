@@ -40,13 +40,22 @@ public interface BoardJpaRepository extends JpaRepository<Board, Long> {
     // N + 1 문제 : 지연 로딩(Lazy Loading) 에서 Board 조회 후 User 를 따로 조회하면 쿼리가 여러번 실행 됨.
     // JOIN FETCH는 이를 한번의 쿼리를 해결 함.
 
-//    // 페이징 처리 전
-//     @Query("SELECT b FROM Board b JOIN FETCH b.user u ORDER BY b.id DESC")
-//     List<Board> findAllJoinUser();
-
-     // 페이징 처리
+    // 페이징 처리
     @Query(value = "SELECT b FROM Board b JOIN FETCH b.user u ORDER BY b.id DESC",
             countQuery = "SELECT COUNT(b) FROM Board b")
     Page<Board> findAllJoinUser(Pageable pageable);
+
+    // 게시글 검색 + 페이징 조회(작성자 함께 조인해서 조회)
+    // 정렬은 Pageable 에 담아서 전달하므로 쿼리에 ORDER BY를 쓰지 않음 !!
+    @Query(value = """
+                     SELECT b FROM Board b JOIN FETCH b.user
+                     WHERE b.title LIKE CONCAT('%', :keyword, '%')
+                     OR    b.content LIKE CONCAT('%', :keyword, '%')""",
+            countQuery = """
+                    SELECT COUNT(b) FROM Board b 
+                    WHERE b.title LIKE CONCAT('%', :keyword, '%')
+                    OR    b.content LIKE CONCAT('%', :keyword, '%')
+                    """)
+    Page<Board> findAllKeywordJoinUser(Pageable pageable, String keyword);
 
 }

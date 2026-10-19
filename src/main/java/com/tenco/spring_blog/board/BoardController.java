@@ -27,8 +27,9 @@ public class BoardController {
     @GetMapping({"/", "/board/list"})
     public String list(@RequestParam(name = "page", defaultValue = "1") int page,
                        @RequestParam(name = "size", defaultValue = "3") int size,
+                       @RequestParam(name = "keyword", defaultValue = "") String keyword,
                        Model model) {
-        BoardResponse.PageDto pageDto = boardService.findAllPage(page, size);
+        BoardResponse.PageDto pageDto = boardService.findAllPage(page, size, keyword);
         model.addAttribute("boardPage", pageDto);
         return "board/list";
     }

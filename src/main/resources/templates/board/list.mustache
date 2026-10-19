@@ -1,6 +1,13 @@
 {{> layout/header}}
 
 <div class="container p-5">
+
+    <form action="/" method="get" class="d-flex mb-4">
+        <input type="text" class="form-control me-2" placeholder="제목 또는 내용으로 검색" name="keyword" value="">
+        <button type="submit" class="btn btn-primary text-nowrap me-2">검색</button>
+        <a href="/" class="btn btn-secondary text-nowrap">초기화</a>
+    </form>
+    
     {{#boardPage.content}}
         <div class="card mb-3">
             <div class="card-body">

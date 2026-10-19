@@ -28,15 +28,24 @@ public class User {
     @CreationTimestamp // now()
     private Timestamp createdAt;
 
+    // 프로필 이미지 파일 이름
+    private String profileImage;
+
     @Builder // id 와 createdAt은 자동으로 채워지므로 빌더에서 제외
-    public User(String username, String password, String email) {
+    public User(String username, String password, String email, String profileImage) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.profileImage = profileImage;
     }
 
     // 회원 정보 수정용 메서드 (변경 감지용)
     public void update(String password) {
         this.password = password;
+    }
+
+    // 프로필 이미지 변경 메서드
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 }
