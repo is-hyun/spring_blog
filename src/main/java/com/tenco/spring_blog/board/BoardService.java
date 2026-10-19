@@ -66,38 +66,25 @@ public class BoardService {
      * 게시글 목록 조회(메인 페이지용)
      * @return 게시글 목록(작성자 정보 포함)
      */
-    public BoardResponse.PageDto findAllPage(int page, int size) {
+    public BoardResponse.PageDto findAllPage(int page, int size, String keyword) {
         log.info("게시글 목록 조회 시작");
 
         // 1. 1부터 시작하는 번호를 0부터로 변환
         int pageIndex = Math.max(0, page - 1);
         // 2. 페이지 크기 제한
         int validSize = Math.max(1, Math.min(50, size));
-
         // 최신 글이 먼저 오도록 id 내림차순 정렬 (주문서 생성)
         Pageable pageable =  PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
-        // 페이징 처리가 된 게시글 목록 조회 요청 (주문 결과 Page)
-        Page<Board> boardPage = boardJpaRepository.findAllJoinUser(pageable);
-        // 조회 후 트랜잭션 안에서 응답 DTO로 변환 처리
-        BoardResponse.PageDto pageDto = new BoardResponse.PageDto(boardPage);
-        // 방법 1 메서드 참조 문법
-        return pageDto;
 
-        // 방법 2 람다 표현식 (스트림 API 활용)
-        //List<BoardResponse.ListDto> dtoList = new ArrayList<>();
-//         dtoList =  boardList.stream()
-//                .map(board -> new BoardResponse.ListDto(board))
-//                .toList();
-
-        // 방법 3
-//        List<BoardResponse.ListDto> dtoList = new ArrayList<>();
-//        for (Board board : boardList) {
-//            dtoList.add(new BoardResponse.ListDto(board));
-//        }
-
-
-//        log.info("게시글 목록 조회 완료");
-//        return boardList;
+        // 추가
+        // isBlank() -  null이 아닌 상태에서 공백 제거 후 개수 확인
+        Page<Board> boardPage;
+        if (keyword == null || keyword.isBlank()) {
+            boardPage = boardJpaRepository.findAllJoinUser(pageable);
+        } else {
+            boardPage = boardJpaRepository.findAllKeywordJoinUser(pageable, keyword);
+        }
+        return new BoardResponse.PageDto(boardPage);
     }
 
     /**
