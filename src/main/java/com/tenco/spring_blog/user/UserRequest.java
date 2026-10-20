@@ -41,7 +41,7 @@ public class UserRequest {
         private String username;
         private String password;
         private String email;
-        private MultipartFile profileImage;
+        private MultipartFile profileImage; // 프로필 이미지 (선택 사항)
 
         // 회원가입시 데이터 검증 메서드
         public void validate() {

@@ -2,7 +2,6 @@ package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.util.MyDateUtil;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 public class UserResponse {
 
@@ -44,7 +43,7 @@ public class UserResponse {
         private Long id;
         private String username;
         private String email;
-        private String profileImage;
+        private String profileImage; // 추가
 
         public updateFormDto(User user) {
             this.id = user.getId();

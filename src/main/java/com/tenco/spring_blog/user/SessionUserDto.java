@@ -13,8 +13,8 @@ public class SessionUserDto {
     private Long id;
     private String username;
     private String email;
-    private boolean admin;
-    private String roleDisplay;
+    private boolean admin; // 관리자 여부 롬북 (isAdmin) - boolean
+    private String roleDisplay; // 화면 표시용 (ADMIN 또는 USER)
 
     public SessionUserDto(User user) {
         this.id = user.getId();
