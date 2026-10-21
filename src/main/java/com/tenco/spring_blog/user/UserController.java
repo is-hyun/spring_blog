@@ -17,10 +17,18 @@ public class UserController {
 
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
+    private final NaverLoginService naverLoginService;
 
+    // 카카오 로그인 진입
     @GetMapping("/kakao-login")
     public String kakaoLogin() {
         return "redirect:" + kakaoLoginService.getAuthorizeUrl();
+    }
+
+    // 네이버 로그인 진입
+    @GetMapping("/naver-login")
+    public String naverLogin() {
+        return "redirect:" + naverLoginService.getAuthorizeUrl();
     }
 
     // 리다이렉트로 들어와서 카카오 서버가 code 값을 동적으로 꼽아주는 URL 입니다

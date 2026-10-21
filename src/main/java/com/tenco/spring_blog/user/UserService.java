@@ -192,4 +192,40 @@ public class UserService {
         newUser.addRole(Role.USER);
         return userJpaRepository.save(newUser);
     }
+
+    @Transactional
+    public SessionUserDto naverLogin(UserResponse.NaverUserInfo naverUserInfo) {
+        UserResponse.NaverUserInfo.Response naverProfile = naverUserInfo.getResponse();
+
+        // 1. 네이버 고유 회원번호(id)로 우리 서비스의 고유 사용자명 만들기
+        String username = "naver_" + naverProfile.getId();
+
+        // 2. 이미 가입했는지 확인, 없으면 자동 회원가입 진행
+        User user = userJpaRepository.findByUsername(username)
+                .orElseGet(() -> joinNaverUser(username, naverProfile));
+
+        // 3. 만약 일반 회원(LOCAL)이나 카카오 회원이 이 username을 선점했다면 예외 처리
+        if (user.getProvider() != OAuthProvider.NAVER) {
+            throw new Exception400("이미 사용 중인 사용자명입니다");
+        }
+
+        // 4. 트랜잭션 범위 안에서 공통 세션 DTO 생성 후 반환
+        return new SessionUserDto(user);
+    }
+
+    // ✨ 네이버 신규 유저 자동 회원가입 내부 메서드
+    private User joinNaverUser(String username, UserResponse.NaverUserInfo.Response naverProfile) {
+        User newUser = User.builder()
+                .username(username)
+                // 소셜 사용자는 비밀번호 로그인을 하지 않으므로 추측 불가능한 임의의 난수값 세팅
+                .password(UUID.randomUUID().toString())
+                .profileImage(naverProfile.getProfileImage())
+                .provider(OAuthProvider.NAVER) // 우리가 수정한 Enum 값 지정
+                .email(naverProfile.getEmail() != null ? naverProfile.getEmail() : username + "@naver.com")
+                .build();
+
+        // 프로젝트 권한 체계에 맞춰 기본 일반 유저 등급 부여
+        newUser.addRole(Role.USER);
+        return userJpaRepository.save(newUser);
+    }
 }

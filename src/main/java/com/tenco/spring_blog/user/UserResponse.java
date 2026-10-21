@@ -96,4 +96,26 @@ public class UserResponse {
         }
     }
 
+    @Getter
+    @Setter
+    public static class NaverUserInfo {
+
+        @JsonProperty("resultcode")
+        private String resultCode;
+        private String message;
+        private Response response; // 네이버는 데이터를 항상 response 객체로 감싸서 응답합니다.
+
+        @Getter
+        @Setter
+        public static class Response {
+            private String id;           // 네이버 고유 식별자 ID
+            private String email;        // 이메일
+            private String name;         // 이름
+            private String nickname;     // 별명
+
+            @JsonProperty("profile_image")
+            private String profileImage; // 프로필 사진 URL
+        }
+    }
+
 }
