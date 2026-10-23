@@ -73,7 +73,6 @@ public class UserService {
         return new UserResponse.JoinDto(savedUser);
     }
 
-
     /**
      * 로그인 처리
      *
@@ -84,14 +83,13 @@ public class UserService {
         log.info("로그인 서비스 처리 시작 - 사용자명: {}", loginDto.getUsername());
 
         // 1. 사용자명으로만 조회 (역할 포함)
-        User user = userJpaRepository.findByUsernameWithRoles(
-                        loginDto.getUsername())
+        User user = userJpaRepository.findByUsernameWithRoles(loginDto.getUsername())
                 .orElseThrow(() -> {
                     log.warn("로그인 실패 - 사용자명 : {}, 원인 : 인증정보 불일치", loginDto.getUsername());
                     return new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
                 });
 
-        // 1. 비밀번호 비교
+        // 2. 비밀번호 비교 : matches(입력한 평문, DB에 저장된 해시)
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             log.warn("로그인 실패");
             throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
@@ -126,7 +124,7 @@ public class UserService {
         User user = findById(id);
         // 2. 비밀번호 조회
         if (updateDto.hasPassword()) {
-            user.update(updateDto.getPassword());
+            user.update(passwordEncoder.encode(updateDto.getPassword()));
         }
         // 3. 새 이미지를 골랐을 때만 교체
         if (updateDto.hasProfileImage()) {
@@ -188,7 +186,7 @@ public class UserService {
         User newUser = User.builder()
                 .username(username)
                 // 카카오 사용자는 비밀번호로 로그인하지 않으므로 아무도 알 수 없는 값을 넣음
-                .password(UUID.randomUUID().toString())
+                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .profileImage(kakaoUserInfo.getProperties().getProfileImage())
                 .provider(OAuthProvider.KAKAO)
                 .email(username + "@kakao.com")
@@ -197,6 +195,7 @@ public class UserService {
         return userJpaRepository.save(newUser);
     }
 
+    // 이메일 사용 가능 영부 (인증번호 발송 전)
     public void checkEmailAvailable(String email) {
         userJpaRepository.findByEmail(email)
                 .ifPresent(user -> {

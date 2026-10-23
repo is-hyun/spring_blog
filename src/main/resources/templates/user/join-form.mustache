@@ -5,7 +5,8 @@
         <div class="card-header"><b>회원가입</b></div>
         <div class="card-body">
             {{! 파일을 보내려면 enctype 를 반드시 multipart/form-data 이여야 함}}
-            <form action="/join" method="post" enctype="multipart/form-data">
+            {{! 태그 자체에 onsubmit : 제출 직전에 인증 벼우를 한 번 처리 하기 위해 설정 함 }}
+            <form action="/join" method="post" enctype="multipart/form-data" onsubmit="return checkVerify()" >
                 <div class="mb-3">
                     <input type="text" class="form-control" placeholder="사용자명" name="username">
                 </div>
@@ -63,13 +64,12 @@
             const result = await response.json(); // JSON 응답 ---> 자바스크립 객체로 변환 됨.
             // 백엔드 개발자와 어떤 식으로 요청을 보내고 어떤 식으로 응답이 올지 확인 해야 한다.
             // 백엔드 API 에서 key : message 로 내려 보내기로 했다.
-            // alert(result.message);
+            alert(result.message);
             if (response.ok) {
                 document.querySelector("#code-box").style.display = "block";
             }
-
-
         } catch (e) {
+
             alert("서버와 통신하지 못했습니다");
         } finally {
             sendBtn.disabled = false;
@@ -109,8 +109,18 @@
                 msgBox.className = "form-text text-danger";
             }
         } catch (e) {
+            console.log(e);
             alert("서버와 통신하지 못했습니다");
         }
+    }
+
+    // 3. 회원가입 제출 직전 확인 (false 를 반환하면 제출이 취소 됨)
+    function checkVerify() {
+        if (!isEmailVerified) {
+            alert("이메일 인증을 먼저 완료해주세요");
+            return false;
+        }
+        return true;
     }
 
 

@@ -5,4 +5,6 @@ public class Define {
     // 이메일 인증
     public static final String EMAIL_CODE_PREFIX = "emailCode_"; // emailCode@naver.com
     public static final String VERIFIED_EMAIL = "verifiedEmail"; // 인증을 마친 이메일 주소
+    public static final long CODE_EXPIRE_MINUTES = 5; // 인증을 마친 이메일 주소
 }
+;
