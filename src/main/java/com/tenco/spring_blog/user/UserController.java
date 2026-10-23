@@ -19,6 +19,13 @@ public class UserController {
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
 
+    //
+    @GetMapping("/user/sms")
+    public String smsPage() {
+        // src/main/resources/templates/user/sms.mustache 템플릿 파일을 찾아 화면을 열어줍니다.
+        return "user/sms-form";
+    }
+
     @GetMapping("/kakao-login")
     public String kakaoLogin() {
         return "redirect:" + kakaoLoginService.getAuthorizeUrl();

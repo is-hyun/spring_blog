@@ -6,6 +6,25 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class UserRequest {
 
+    // SMS 인증 요청 DTO
+    @Data
+    public static class SmsCheckDto {
+        private String phone;
+        private String code;
+
+        public void validate() {
+            if (phone == null || phone.trim().isEmpty()) {
+                throw new Exception400("전화번호를 입력해 주세요");
+            }
+        }
+        public void validateCode() {
+            validate();
+            if (code == null || code.trim().isEmpty()) {
+                throw new Exception400("인증번호를 입력해 주세요");
+            }
+        }
+    }
+
     // 이메일 인증 요청 DTO (발송, 확인 API에서 함께 사용)
     @Data
     public static class EmailCheckDto {
@@ -14,7 +33,7 @@ public class UserRequest {
 
         public void validate() {
             if (email == null || email.trim().isEmpty()) {
-                throw new Exception400("이메일을 입력해주세요");
+                throw new Exception400("이메일을 입력해 주세요");
             }
             if (!email.contains("@")) {
                 throw new Exception400("올바른 이메일 형식이 아닙니다");
@@ -25,7 +44,7 @@ public class UserRequest {
         public void validateCode() {
             validate();
             if (code == null || code.trim().isEmpty()) {
-                throw new Exception400("인증번호를 입력해주세요");
+                throw new Exception400("인증번호를 입력해 주세요");
             }
         }
     }

@@ -2,6 +2,7 @@ package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.util.Define;
+import com.tenco.spring_blog.sms.SmsService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,28 @@ public class UserApiController {
 
     private final MailService mailService;
     private final UserService userService;
+    private final SmsService smsService;
+
+    // 전송
+    @PostMapping("/api/sms/send")
+    public ResponseEntity<?> sendSmsCode(@RequestBody UserRequest.SmsCheckDto smsCheckDto, HttpSession session) {
+        smsCheckDto.validate();
+
+        smsService.senVerificationCode(smsCheckDto.getPhone(), session);
+
+        return ResponseEntity.ok(Map.of("message", "인증번호가 발송되었습니다 "
+                + Define.CODE_EXPIRE_MINUTES + "분 안에 입력하세요"));
+    }
+
+    // 검증
+    @PostMapping("/api/sms/verify")
+    public ResponseEntity<?> verifySmsCode(@RequestBody UserRequest.SmsCheckDto smsCheckDto, HttpSession session) {
+        smsCheckDto.validateCode();
+
+        smsService.verifyCode(smsCheckDto.getPhone(), smsCheckDto.getCode(), session);
+
+        return ResponseEntity.ok().body(Map.of("message", "인증되었습니다"));
+    }
 
     // POST /api/email/send
     // 요청 바디 :  {"email": "aaa@naver.com"}
@@ -58,7 +81,7 @@ public class UserApiController {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleEx500(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "메일 발송 중 오류가 발생했습니다."));
+                .body(Map.of("message", "발송 중 오류가 발생했습니다."));
     }
 
 }

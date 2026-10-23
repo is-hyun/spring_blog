@@ -1,0 +1,149 @@
+{{> layout/header}}
+
+<div class="container p-5">
+    <div class="card mx-auto" style="max-width: 800px;">
+        <div class="card-header bg-white pt-3"><b>휴대폰 인증</b></div>
+        <div class="card-body">
+            <form action="/user/sms" method="post" onsubmit="return false;">
+
+                <div class="input-group mb-3">
+                    <input type="tel" class="form-control p-2" placeholder="전화번호" name="phone" id="phoneNumber" required>
+                    <button type="button" class="btn btn-outline-secondary px-4" id="send-btn" onclick="sendCode()">인증 번호 전송</button>
+                </div>
+
+                <div class="mb-3" id="code-box">
+                    <div class="input-group mb-1">
+                        <input type="text" class="form-control p-2" id="code" placeholder="인증번호 입력" maxlength="10">
+                        <button type="button" class="btn btn-outline-secondary px-4" id="verify-btn" onclick="verifyCode()">확인</button>
+                    </div>
+                    <small id="msg" class="form-text text-danger"></small>
+                </div>
+
+                <a href="/user/detail" class="btn btn-secondary px-4 py-2 mt-2">마이페이지로 돌아가기</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isSmsSent = false;
+    let isSmsVerified = false;
+    let timerInterval = null;
+
+    // 1. 휴대폰 인증번호 전송
+    async function sendCode() {
+        const phone = document.querySelector("#phoneNumber").value;
+        const sendBtn = document.querySelector("#send-btn");
+        const msgBox = document.querySelector("#msg");
+
+        if (!phone) {
+            alert("전화번호를 입력해 주세요");
+            return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.innerText = "전송 중···";
+
+        try {
+            const response = await fetch("/api/sms/send", {
+                method: "POST",
+                headers: {"Content-Type" : "application/json"},
+                body: JSON.stringify({phone: phone})
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                isSmsSent = true; // 문자 발송 성공
+
+                msgBox.innerText = "인증번호를 입력해주세요.";
+                msgBox.className = "form-text text-primary";
+                startRetryTimer(60);
+            } else {
+                alert(result.message);
+                sendBtn.disabled = false;
+                sendBtn.innerText = "인증 번호 전송";
+            }
+        } catch (e) {
+            console.error(e);
+            alert("서버와 통신하지 못했습니다");
+            sendBtn.disabled = false;
+            sendBtn.innerText = "인증 번호 전송";
+        }
+    }
+
+    // 2. 인증번호 확인 요청
+    async function verifyCode() {
+        const phone = document.querySelector("#phoneNumber").value;
+        const code = document.querySelector("#code").value;
+        const msgBox = document.querySelector("#msg");
+        const verifyBtn = document.querySelector("#verify-btn");
+
+        if (!isSmsSent) {
+            msgBox.innerText = "인증 번호를 먼저 요청해주세요";
+            msgBox.className = "form-text text-danger"; // 빨간색 경고문출력
+            return;
+        }
+
+        if (!code) {
+            alert("인증번호를 입력해주세요");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/sms/verify", {
+                method: "POST",
+                headers : {"Content-Type" : "application/json"},
+                body: JSON.stringify({phone: phone, code: code})
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                isSmsVerified = true;
+
+                if (timerInterval) clearInterval(timerInterval);
+
+                msgBox.innerText = result.message;
+                msgBox.className = "form-text text-success";
+
+                document.querySelector("#phoneNumber").readOnly = true;
+                document.querySelector("#code").readOnly = true;
+                document.querySelector("#send-btn").disabled = true;
+                document.querySelector("#send-btn").innerText = "인증 완료";
+                if (verifyBtn) verifyBtn.disabled = true;
+
+                alert("휴대폰 인증이 성공적으로 완료되었습니다.");
+                location.href = "/user/detail";
+            } else {
+                msgBox.innerText = result.message;
+                msgBox.className = "form-text text-danger";
+            }
+        } catch (e) {
+            console.error(e);
+            alert("서버와 통신하지 못했습니다");
+        }
+    }
+
+    // 3. 화면단 60초 재발송 차단 타이머 제어 함수
+    function startRetryTimer(duration) {
+        const sendBtn = document.querySelector("#send-btn");
+        let timeLeft = duration;
+
+        if (timerInterval) clearInterval(timerInterval);
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            sendBtn.innerText = `재발송 가능 (${timeLeft}초)`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                sendBtn.disabled = false;
+                sendBtn.innerText = "인증 번호 전송";
+            }
+        }, 1000);
+    }
+</script>
+
+{{> layout/footer}}
