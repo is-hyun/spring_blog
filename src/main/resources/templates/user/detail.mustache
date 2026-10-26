@@ -2,7 +2,6 @@
 
 <div class="container p-5">
     <div class="card">
-        <div class="card-header"><b>마이페이지</b></div>
         <div class="card-body">
             <div class="text-center mb-4">
                 <!--   프로필 이미지 있을 경우              -->
@@ -31,12 +30,54 @@
                 <label for="" class="form-label fw-bold">가입일</label>
                 <p class="form-control-plaintext">{{user.createdAt}}</p>
             </div>
+
+            {{! 보유 포인트 + 충전 }}
+            <div class="mb-3">
+                <label for="" class="form-label fw-bold">보유 포인트</label>
+                <p class="form-control-plaintext">
+                    <span id="point-display">유저 포인트</span>
+                </p>
+                <div class="input-group" style="max-width: 320px;">
+                    <input type="number" id="charge-amount" class="form-control" placeholder="충전할 포인트" value="1000" min="1">
+                    <button type="button" class="btn btn-outline-success" onclick="chargePoint()">포인트 충전</button>
+                </div>
+            </div>
+
             <div class="mb-3">
                 <a href="/user/update" class="btn btn-primary">회원 정보 수정</a>
                 <a href="/" class="btn btn-secondary">목록으로</a>
             </div>
         </div>
+        <div class="card-header"><b>마이페이지</b></div>
     </div>
 </div>
+
+<script>
+    async function chargePoint() {
+        // 화면 조작
+        const amount = Number(document.querySelector("#charge-amount").value);
+        if (!amount || amount < 0) {
+            alert("충전할 포인트를 올바르게 입력해 주세요");
+            return;
+        }
+
+        // 통신
+        try {
+            const response = await fetch("/api/point/charge", {
+                method: "POST",
+                headers: {"Content-Type" : "application/json"},
+                body: JSON.stringify({amount: amount})
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                document.querySelector("#point-display").innerText = result.point;
+            }
+            alert(result.message);
+        } catch (e) {
+            alert("서버와 통신하지 못했습니다");
+        }
+    }
+</script>
 
 {{> layout/footer}}
