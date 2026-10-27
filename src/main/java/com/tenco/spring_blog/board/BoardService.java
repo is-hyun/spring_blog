@@ -1,7 +1,9 @@
 package com.tenco.spring_blog.board;
 
+import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog._core.error.Exception404;
+import com.tenco.spring_blog.purchase.PurchaseJpaRepository;
 import com.tenco.spring_blog.reply.ReplyJpaRepository;
 import com.tenco.spring_blog.user.SessionUserDto;
 import com.tenco.spring_blog.user.User;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Board 관련 비즈니스 로직을 처리하는 Service 계층
@@ -30,6 +34,7 @@ public class BoardService {
     private final BoardJpaRepository boardJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final ReplyJpaRepository replyJpaRepository;
+    private final PurchaseJpaRepository purchaseJpaRepository;
 
     /**
      * 게시글 저장
@@ -53,31 +58,34 @@ public class BoardService {
      * @param id  게시글 PK
      * @return 게시글 정보 (작성자 정보 포함)
      */
-    public BoardResponse.DetailDto findById(Long id) {
+    public BoardResponse.DetailDto findById(Long id, Long sessionUserId) {
         log.info("게시글 상세 조회 서비스 - ID : {} ", id);
         Board board = boardJpaRepository.findByIdJoinUser(id)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
         log.info("게시글 상세 조회 완료 - 제목 : {}, 작성자 : {} ", board.getTitle(), board.getUser().getUsername());
-        return new BoardResponse.DetailDto(board);
+        // 로그인하지 않아쓰면 작성자도, 구매자도 아님?
+        boolean owner = sessionUserId != null && board.isOwner(sessionUserId);
+        // 로그인 했고, 구매이력 테이블에 내가 존재한다 (boardId, userId)
+        boolean purchased = sessionUserId != null
+                && purchaseJpaRepository.existsByUserIdAndBoardId(sessionUserId, id);
+
+
+        return new BoardResponse.DetailDto(board, owner, purchased);
     }
 
-
     /**
-     * 게시글 목록 조회(메인 페이지용)
+     * 게시글 목록 조회 페이징 처리(메인 페이지용)
      * @return 게시글 목록(작성자 정보 포함)
      */
     public BoardResponse.PageDto findAllPage(int page, int size, String keyword) {
         log.info("게시글 목록 조회 시작");
-
-        // 1. 1부터 시작하는 번호를 0부터로 변환
+        // 1. 1부터 시작하는 번호를  0부터로 변환 (0 이하가 들어와도 0으로 보장)
         int pageIndex = Math.max(0, page - 1);
-        // 2. 페이지 크기 제한
         int validSize = Math.max(1, Math.min(50, size));
         // 최신 글이 먼저 오도록 id 내림차순 정렬 (주문서 생성)
         Pageable pageable =  PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
-
-        // 추가
-        // isBlank() -  null이 아닌 상태에서 공백 제거 후 개수 확인
+        // isBlank() --> null 이 아닌 상태에서 공백 제거 후 개수 확인
+        // "    "  <---
         Page<Board> boardPage;
         if (keyword == null || keyword.isBlank()) {
             boardPage = boardJpaRepository.findAllJoinUser(pageable);
@@ -86,6 +94,7 @@ public class BoardService {
         }
         return new BoardResponse.PageDto(boardPage);
     }
+
 
     /**
      * 게시글 수정 화면 요청 (인가 검사)
@@ -135,7 +144,16 @@ public class BoardService {
                     id, board.getUser().getUsername(), sessionUser.getUsername());
             throw new Exception403("본인이 작성한 게시글만 삭제할 수 있습니다");
         }
+
+        // 구매자가 있는 게시글은 삭제 불가 (구매자의 구매 내역과 포인트 보호)
+        if (purchaseJpaRepository.countByBoardId(id) > 0) {
+            log.warn("구매 내역이 있어 게시글 삭제 불가 - 게시글 ID : {}", id);
+            throw new Exception400("구매한 사용자가 있는 게시글은 삭제할 수 없습니다.");
+        }
+
+        // boardId로 댓글 부터 먼저 삭제
         replyJpaRepository.deleteByBoardId(id);
+        // 해당 게시글 삭제
         boardJpaRepository.deleteById(id);
         log.info("게시글 삭제 종료");
     }

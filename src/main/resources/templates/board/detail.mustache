@@ -17,15 +17,35 @@
     </div>
 
     <div>
-        <h2><b>{{board.title}}</b></h2>
+        <h2>
+            <b>{{board.title}}</b>
+            {{#board.premium}}<span class="badge bg-warning text-dark">유료</span>{{/board.premium}}
+        </h2>
         <hr>
-        <div class="m-4 p-2">
-            {{board.content}}0
-            .
-        </div>
+
+        {{! canRead : 무료글이거나, 작성자이거나, 구매한 사용자 (서비스에서 계산) }}
+        {{#board.canRead}}
+            <div class="m-4 p-2">
+                {{board.content}}
+            </div>
+        {{/board.canRead}}
+
+        {{^board.canRead}}
+            <div class="m-4 p-4 text-center border rounded bg-light">
+                <p class="text-muted mb-3">유료 게시글입니다. 구매 후 전체 내용을 볼 수 있습니다. ({{board.price}} 포인트)</p>
+                {{#sessionUserDto}}
+                    <form action="/board/{{board.id}}/purchase" method="post"
+                          onsubmit="return confirm('{{board.price}} 포인트로 이 게시글을 구매하시겠습니까?')">
+                        <button type="submit" class="btn btn-primary">구매하기 ({{board.price}}P)</button>
+                    </form>
+                {{/sessionUserDto}}
+                {{^sessionUserDto}}
+                    <a href="/login" class="btn btn-outline-primary">로그인 후 구매</a>
+                {{/sessionUserDto}}
+            </div>
+        {{/board.canRead}}
     </div>
 
-    {{! 댓글: 아직 기능이 없어 화면만 만들어 둡니다 }}
     <div class="card mt-3">
         <div class="card-body">
             <form action="/reply/save" method="post">
@@ -38,22 +58,20 @@
         </div>
         <div class="card-footer"><b>댓글 목록</b></div>
         <div class="list-group">
-            {{! 댓글 1 시작}}
             {{#replyList}}
                 <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div class="d-flex">
-                    <div class="px-1 me-1 bg-primary text-white rounded">{{username}}</div>
-                    <div>{{comment}}</div>
+                    <div class="d-flex">
+                        <div class="px-1 me-1 bg-primary text-white rounded">{{username}}</div>
+                        <div>{{comment}}</div>
+                    </div>
+                    {{#isOwner}}
+                        <form action="/reply/{{id}}/delete" method="post">
+                            <input type="hidden" name="boardId" value="{{board.id}}">
+                            <button class="btn"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    {{/isOwner}}
                 </div>
-                {{#isOwner}}
-                <form action="/reply/{{id}}/delete" method="post">
-                    <input type="hidden" name="boardId" value="{{board.id}}">
-                    <button class="btn"><i class="fa-solid fa-trash"></i></button>
-                </form>
-                {{/isOwner}}
-            </div>
             {{/replyList}}
-            {{! 댓글 1 종료}}
         </div>
     </div>
 </div>

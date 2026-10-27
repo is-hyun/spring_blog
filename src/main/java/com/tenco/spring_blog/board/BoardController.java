@@ -2,7 +2,7 @@ package com.tenco.spring_blog.board;
 
 import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog._core.util.Define;
-import com.tenco.spring_blog.reply.Reply;
+import com.tenco.spring_blog.purchase.PurchaseService;
 import com.tenco.spring_blog.reply.ReplyResponse;
 import com.tenco.spring_blog.reply.ReplyService;
 import com.tenco.spring_blog.user.SessionUserDto;
@@ -13,6 +13,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -23,6 +25,7 @@ public class BoardController {
 
     private final BoardService boardService;
     private final ReplyService replyService;
+    private final PurchaseService purchaseService; // 추가
 
     @GetMapping({"/", "/board/list"})
     public String list(@RequestParam(name = "page", defaultValue = "1") int page,
@@ -31,30 +34,43 @@ public class BoardController {
                        Model model) {
         BoardResponse.PageDto pageDto = boardService.findAllPage(page, size, keyword);
         model.addAttribute("boardPage", pageDto);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("isSearch", !keyword.isBlank());
+        // 페이지 링크는 직접 URL 인코딩이 필요하다
+        model.addAttribute("keywordParam", URLEncoder.encode(keyword, StandardCharsets.UTF_8));
+
         return "board/list";
     }
 
     // GET http://localhost:8080/board/3
-    // excludePathPatterns로 제외되어 로그인 접근 가능
+    // excludePathPatterns로 제외되어 로그인 없이 접근 가능
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model, HttpSession session) {
-        BoardResponse.DetailDto detailDto = boardService.findById(id);
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
-
         // 로그인하지 않았으면 null 설정
         Long sessionUserId = (sessionUserDto == null) ? null : sessionUserDto.getId();
 
-        // 로그인했고, 작성자 본인일 때만 수정, 삭제 버튼 표시
-        boolean isOwner = sessionUserDto != null && detailDto.getUserId().equals(sessionUserDto.getId());
+        // 작성자 여부, 구매 여부, 열람 가능 여부까지 계산된 DTO (수정)
+        BoardResponse.DetailDto detailDto = boardService.findById(id, sessionUserId);
 
         // 댓글 목록 조회
         List<ReplyResponse.ListDto> replyList = replyService.findAllByBoardId(id, sessionUserId);
 
         model.addAttribute("board", detailDto);
-        model.addAttribute("isOwner", isOwner);
+        model.addAttribute("isOwner", detailDto.isOwner()); // 수정 : 서비스가 계산한 값 사용
         model.addAttribute("replyList", replyList);
 
         return "board/detail";
+    }
+
+    // POST http://localhost:8080/board/3/purchase (유료 게시글 구매, 추가)
+    // /board/** 이므로 LoginInterceptor 가 로그인 여부를 먼저 검사
+    @PostMapping("/board/{id}/purchase")
+    public String purchase(@PathVariable(name = "id") Long id, HttpSession session) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        purchaseService.purchase(id, sessionUserDto.getId());
+        // 구매 후 상세보기로 이동 (이제 본문이 보임)
+        return "redirect:/board/" + id;
     }
 
     // GET http://localhost:8080/board/save (화면 요청)
