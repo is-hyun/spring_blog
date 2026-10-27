@@ -1,6 +1,5 @@
 package com.tenco.spring_blog.user;
 
-import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.util.Define;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,16 @@ public class UserController {
 
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
+
+    // GET http://localhost:8080/user/point/charge (포인트 충전 화면)
+    @GetMapping("/user/point/charge")
+    public String chargePointForm(Model model, HttpSession session) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        model.addAttribute("user", sessionUserDto);
+        return "user/charge-point";
+    }
+
+
 
     @GetMapping("/kakao-login")
     public String kakaoLogin() {
