@@ -10,8 +10,10 @@ public class BoardRequest {
     public static class SaveDto {
         private String title;
         private String content;
-        private boolean premium; // 유료 게시글 여부 (추가, 체크 안 하면 false)
+        private boolean premium; // 유료 게시글 여부 (체크 안 하면 false)
 
+
+        // 검증 메서드 (선택 사항)
         public void validate() {
             if(title == null || title.trim().isEmpty()) {
                 throw new Exception400("제목은 필수입니다");
@@ -21,23 +23,25 @@ public class BoardRequest {
             }
         }
 
-        // DTO 에서 Entity로 변환하는 편의 메서드
+        // DTO 에서 Entity로 변환하는 편의 메서드 설계
         public Board toEntity(User user) {
             return Board.builder()
                     .title(this.title)
                     .content(this.content)
-                    .user(user)
-                    .premium(this.premium) // 추가
+                    .premium(this.premium)
+                    .user(user) // 세션에서 가져온 User 객체 설정
                     .build();
         }
+
     }
 
     @Data
     public static class UpdateDto {
         private String title;
         private String content;
-        private boolean premium; // 유료 게시글 여부 (추가)
+        private boolean premium;
 
+        // 검증 메서드 (선택 사항)
         public void validate() {
             if(title == null || title.trim().isEmpty()) {
                 throw new Exception400("제목은 필수입니다");
