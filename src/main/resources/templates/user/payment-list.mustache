@@ -1,0 +1,46 @@
+{{> layout/header}}
+
+<div class="container p-5">
+    <div class="card">
+        <div class="card-header">
+            <h4><b>결제 내역</b></h4>
+        </div>
+        <div class="card-body">
+            {{#paymentList}}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-2"><b>결제 #{{-index}}</b></h5>
+                                <p class="text-muted mb-2"><i class="fa-solid fa-receipt"></i> 주문번호: {{paymentId}}</p>
+                                <p class="text-muted mb-2"><i class="fa-solid fa-key"></i> 결제번호: {{pgTxId}}</p>
+                                <p class="text-muted mb-2"><i class="fa-solid fa-calendar-days"></i> 결제일: {{paymentAt}}</p>
+                                <p class="text-muted mb-0">
+                                    <i class="fa-solid fa-circle-info"></i> 상태:
+                                    <span class="badge {{statusBadge}}">{{statusToKor}}</span>
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary fs-6">+{{amount}} P</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/paymentList}}
+
+            {{^paymentList}}
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-credit-card fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">결제 내역이 없습니다</h5>
+                    <h6 class="text-muted mb-3">포인트를 충전해 보세요!</h6>
+                    <a href="/user/point/charge" class="btn btn-primary">포인트 충전</a>
+                </div>
+            {{/paymentList}}
+
+            <div class="mb-2">
+                <a href="/user/detail" class="btn btn-secondary">마이페이지 돌아가기</a>
+            </div>
+        </div>
+    </div>
+</div>
+{{> layout/footer}}

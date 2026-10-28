@@ -2,6 +2,8 @@ package com.tenco.spring_blog.payment;
 
 import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception403;
+import com.tenco.spring_blog.purchase.Purchase;
+import com.tenco.spring_blog.purchase.PurchaseResponse;
 import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -19,6 +22,14 @@ public class PaymentService {
 
     private final PaymentJpaRepository paymentJpaRepository;
     private final UserJpaRepository userJpaRepository;
+
+    public List<PaymentResponse.ListDto> findAllByUserId(Long userId) {
+        List<Payment> paymentList = paymentJpaRepository.findAllByUserId(userId);
+        // 2. 트랜젹션 안에서 엔티티를 응답 DTO로 변환 리턴 처리
+        return paymentList.stream()
+                .map(PaymentResponse.ListDto::new)
+                .toList();
+    }
 
     /**
      *  1단계 : 결제 건 생성
