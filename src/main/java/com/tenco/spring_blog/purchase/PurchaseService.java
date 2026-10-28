@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 // 유료 게시글 구매 처리
 @Slf4j
 @RequiredArgsConstructor
@@ -65,5 +67,14 @@ public class PurchaseService {
 
         log.info("유료 게시글 구매 완료 - 게시글 ID : {}, 구매자 ID : {}, 남은 포인트 : {}",
                 boardId, userId, user.getPoint());
+    }
+
+    @Transactional
+    public List<PurchaseResponse.PurchaseListDto> getPurchaseList(Long userId) {
+        List<Purchase> purchaseList = purchaseJpaRepository.findByUserId(userId);
+
+        return purchaseList.stream()
+                .map(PurchaseResponse.PurchaseListDto::new)
+                .toList();
     }
 }

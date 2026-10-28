@@ -8,9 +8,29 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface PurchaseJpaRepository extends JpaRepository<Purchase, Long> {
-    // 구매 내역 조회 (해당 게시글 pk 기준)
-    @Query("SELECT p FROM Purchase p WHERE p.user.id = :userId AND p.board.id = :boardId")
+
+    @Query("""
+        SELECT p 
+        FROM Purchase p 
+        JOIN FETCH p.board b 
+        JOIN FETCH b.user u 
+        WHERE p.user.id = :userId 
+        ORDER BY p.id DESC
+    """)
+    java.util.List<Purchase> findByUserId(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT p 
+        FROM Purchase p 
+        JOIN FETCH p.board b 
+        JOIN FETCH b.user u 
+        WHERE p.user.id = :userId AND p.board.id = :boardId
+    """)
     Optional<Purchase> findByUserIdAndBoardId(@Param("userId") Long userId, @Param("boardId") Long boardId);
+
+    // 구매 내역 조회 (해당 게시글 pk 기준)
+    // @Query("SELECT p FROM Purchase p WHERE p.user.id = :userId AND p.board.id = :boardId")
+    // Optional<Purchase> findByUserIdAndBoardId(@Param("userId") Long userId, @Param("boardId") Long boardId);
 
     // 구매 여부 확인 (true , false 응답 필요시)
     @Query("""

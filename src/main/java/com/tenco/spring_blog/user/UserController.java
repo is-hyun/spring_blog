@@ -1,6 +1,9 @@
 package com.tenco.spring_blog.user;
 
+import com.tenco.spring_blog._core.error.Exception401;
 import com.tenco.spring_blog._core.util.Define;
+import com.tenco.spring_blog.purchase.PurchaseResponse;
+import com.tenco.spring_blog.purchase.PurchaseService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @RequiredArgsConstructor // DI
 @Slf4j
 @Controller // IoC (제어의 역전) 싱글톤 패턴으로 관리 됨.
@@ -17,6 +22,21 @@ public class UserController {
 
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
+    private final PurchaseService purchaseService;
+
+    // 구매내역 조회 화면 요청
+    // GET http://localhost:8080/user/purchase/list
+    @GetMapping("/user/purchase/list")
+    public String purchaseList(HttpSession session, Model model) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+
+        List<PurchaseResponse.PurchaseListDto> purchaseList = purchaseService.getPurchaseList(sessionUserDto.getId());
+
+        model.addAttribute("purchaseList", purchaseList);
+        model.addAttribute("user", sessionUserDto);
+
+        return "user/purchase-list";
+    }
 
     // GET http://localhost:8080/user/point/charge (포인트 충전 화면)
     @GetMapping("/user/point/charge")
