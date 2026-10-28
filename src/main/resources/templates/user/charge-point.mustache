@@ -104,8 +104,8 @@
                 alert("포인트 충전에 실패했습니다");
             }
 
-            // 안내 문구 ... alert()...
-            // location.href = "/user/detail";
+            alert(result.amount.toLocaleString() + "P 충전 완료")
+            location.href = "/user/detail";
 
         } catch (e) {
 

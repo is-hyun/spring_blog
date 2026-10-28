@@ -25,7 +25,17 @@ public class BoardController {
 
     private final BoardService boardService;
     private final ReplyService replyService;
-    private final PurchaseService purchaseService; // 추가
+    private final PurchaseService purchaseService;
+
+    // 유료 게시글 구매 요청 URL 만들기
+    // /board/{{board.id}}/purchase
+    @PostMapping("/board/{id}/purchase")
+    public String purchase(@PathVariable(name = "id") Long id, HttpSession session) {
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        purchaseService.purchase(id, sessionUserDto.getId());
+        // 구매 후 상세보기로 이동 (이제 본문이 나와야 함)
+        return "redirect:/board/" + id;
+    }
 
     @GetMapping({"/", "/board/list"})
     public String list(@RequestParam(name = "page", defaultValue = "1") int page,
@@ -43,34 +53,25 @@ public class BoardController {
     }
 
     // GET http://localhost:8080/board/3
-    // excludePathPatterns로 제외되어 로그인 없이 접근 가능
+    // excludePathPatterns로 제외되어 로그인 접근 가능
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model, HttpSession session) {
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
         // 로그인하지 않았으면 null 설정
         Long sessionUserId = (sessionUserDto == null) ? null : sessionUserDto.getId();
-
-        // 작성자 여부, 구매 여부, 열람 가능 여부까지 계산된 DTO (수정)
         BoardResponse.DetailDto detailDto = boardService.findById(id, sessionUserId);
+
+        // 로그인했고, 작성자 본인일 때만 수정, 삭제 버튼 표시
+        boolean isOwner = sessionUserDto != null && detailDto.getUserId().equals(sessionUserDto.getId());
 
         // 댓글 목록 조회
         List<ReplyResponse.ListDto> replyList = replyService.findAllByBoardId(id, sessionUserId);
 
         model.addAttribute("board", detailDto);
-        model.addAttribute("isOwner", detailDto.isOwner()); // 수정 : 서비스가 계산한 값 사용
+        model.addAttribute("isOwner", isOwner);
         model.addAttribute("replyList", replyList);
 
         return "board/detail";
-    }
-
-    // POST http://localhost:8080/board/3/purchase (유료 게시글 구매, 추가)
-    // /board/** 이므로 LoginInterceptor 가 로그인 여부를 먼저 검사
-    @PostMapping("/board/{id}/purchase")
-    public String purchase(@PathVariable(name = "id") Long id, HttpSession session) {
-        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
-        purchaseService.purchase(id, sessionUserDto.getId());
-        // 구매 후 상세보기로 이동 (이제 본문이 보임)
-        return "redirect:/board/" + id;
     }
 
     // GET http://localhost:8080/board/save (화면 요청)

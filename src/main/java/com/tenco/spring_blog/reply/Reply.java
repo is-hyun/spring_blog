@@ -55,6 +55,4 @@ public class Reply {
         return this.user.getId().equals(userId);
     }
 
-    // TODO 추가
-    // 영속성 엔티티 수정 메서드
 }
