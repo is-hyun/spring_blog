@@ -26,7 +26,7 @@ spring:
     open-in-view: true
     hibernate:
       # 시작할 때마다 테이블을 새로 생성. 기존 데이터는 지워짐(개발용)
-      ddl-auto: create
+      ddl-auto: update
     # 실행되는 SQL을 콘솔에 출력
     show-sql: true
     properties:
@@ -39,6 +39,6 @@ spring:
   # 서버 시작 시 해당 파일 실행
   sql:
     init:
-      mode: always
+      mode: never
       data-locations:
         - classpath:db/data.sql
