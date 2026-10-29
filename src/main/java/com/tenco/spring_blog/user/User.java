@@ -2,6 +2,7 @@ package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.NotEnoughPointException;
+import com.tenco.spring_blog._core.util.MyNumberUtil;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -124,5 +125,9 @@ public class User {
             throw new NotEnoughPointException("마이 페이지에서 충전 후 다시 시도해주세요");
         }
         this.point -= amount;
+    }
+
+    public String getPointFormat() {
+        return MyNumberUtil.numberFormat(point);
     }
 }

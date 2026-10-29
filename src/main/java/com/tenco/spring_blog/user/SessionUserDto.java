@@ -15,6 +15,7 @@ public class SessionUserDto {
     private String email;
     private boolean admin; // 관리자 여부 롬북 (isAdmin) - boolean
     private String roleDisplay; // 화면 표시용 (ADMIN 또는 USER)
+    private String point;
 
     public SessionUserDto(User user) {
         this.id = user.getId();
@@ -22,5 +23,6 @@ public class SessionUserDto {
         this.email = user.getEmail();
         this.admin = user.isAdmin(); // 관리자이면 true
         this.roleDisplay = this.admin ? "ADMIN" : "USER";
+        this.point = user.getPointFormat();
     }
 }

@@ -2,6 +2,7 @@ package com.tenco.spring_blog.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tenco.spring_blog._core.util.MyDateUtil;
+import com.tenco.spring_blog._core.util.MyNumberUtil;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +18,7 @@ public class UserResponse {
         private String profileImage; // 파일 이름 (없으면 null)
         private String createdAt; // 포맷된 가입일
         private int point; // 현재 보유 포인트
+        private String formattedPoint;
 
         public DetailDto(User user) {
             this.id = user.getId();
@@ -25,6 +27,7 @@ public class UserResponse {
             this.profileImage = user.getProfilePath(); // 코드 수정
             this.createdAt = MyDateUtil.timestampFormat(user.getCreatedAt());;
             this.point = user.getPoint(); // 추가
+            this.formattedPoint = MyNumberUtil.numberFormat(user.getPoint());
         }
     }
 
