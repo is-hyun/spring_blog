@@ -39,4 +39,47 @@ public class RefundResponse {
             this.rejected = refund.getStatus() == RefundStatus.REJECTED;
         }
     }
+
+    @Data
+    public static class AdminListDto {
+        private Long id;   // 환불 요청 PK
+        private String username; // 환불 신청자 이름
+        private String paymentId; // 포트원 결제 건 식별자
+        private int amount; // 환불 금액
+        private String amountFormat; // 환불 금액
+        private String reason; // 신청자 환불 사유
+        private String statusDisplay; // 대기중, 승인됨, 거절됨
+        private String requestedAt;   // 환불 신청일
+
+        private boolean pending;  // 대기중 여부 (모달 버튼, 배지색)
+        private boolean approved; // 승인됨 여부 (배지 색)
+
+        public AdminListDto(Refund refund) {
+            this.id = refund.getId();
+            this.username = refund.getUser().getUsername();
+            this.paymentId = refund.getPayment().getPaymentId(); // 주문 번호
+            this.amount = refund.getPayment().getAmount();
+            this.amountFormat = refund.getPayment().getAmoutFormat();
+            this.reason = refund.getReason();
+            this.statusDisplay = refund.getStatus().getDisplayName();
+            if (refund.getCreatedAt() != null) {
+                this.requestedAt = MyDateUtil.timestampFormat(refund.getCreatedAt());
+            }
+
+            this.pending = refund.getStatus() == RefundStatus.PENDING;
+            this.approved = refund.getStatus() == RefundStatus.APPROVED;
+        }
+    }
+
+    @Data
+    public static class ApproveDto {
+        private String paymentId;
+        private int amount;
+        // private String amountFormat;
+
+        public ApproveDto(String paymnetId, int amount) {
+            this.paymentId = paymnetId;
+            this.amount = amount;
+        }
+    }
 }

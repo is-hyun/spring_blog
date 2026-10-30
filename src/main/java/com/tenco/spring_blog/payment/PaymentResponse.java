@@ -76,4 +76,18 @@ public class PaymentResponse {
         }
     }
 
+    // 포트원 결제 취소 응답
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PortOneCancel {
+        Cancellation cancellation;
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Cancellation {
+            private String id;
+            private String status;
+            private int totalAmount;
+        }
+    }
 }

@@ -3,15 +3,13 @@ package com.tenco.spring_blog.payment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.PortUnreachableException;
+import java.util.Map;
 
 
 // 포트원 서버와 HTTP 통신만 담당하는 클래스 (포트원 설정값도 이곳에서만 관리)
@@ -45,8 +43,31 @@ public class PortOneApiClient {
                 request,
                 PaymentResponse.PortOnePayment.class
         );
-        log.info("포드원 결제 조회 완료 : {}", response);
+        log.info("포트원 결제 조회 완료 : {}", response);
         return response.getBody();
     }
 
+    public PaymentResponse.PortOneCancel cancelPayment(String paymentId, int amount) {
+
+        // 헤더 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "PortOne " + apiSecret);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 요청 바디 {"amount":5000,"reason":"관리자 환불 승인"}
+        Map<String, Object> body = Map.of("amount", amount, "reason", "관리자 환불 승인");
+
+        // HTTP 엔티티 생성 - 바디 + 헤더
+        HttpEntity<Map<String, Object>> request = new HttpEntity(body, headers);
+
+        // HTTP 요청 + 응답 처리
+        ResponseEntity<PaymentResponse.PortOneCancel> response =  restTemplate.exchange(
+                PAYMENT_URL + "/" + paymentId + "/cancel",
+                HttpMethod.POST,
+                request,
+                PaymentResponse.PortOneCancel.class
+        );
+
+        return response.getBody();
+    }
 }

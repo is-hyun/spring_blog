@@ -42,7 +42,6 @@ public class RefundController {
         saveDto.validate();
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
         refundService.save(saveDto, sessionUserDto.getId());
-        // TODO 컨트롤러와 머스태치 파일 만들어야 함
         return "redirect:/refund/list";
     }
 }
